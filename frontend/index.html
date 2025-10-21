@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>MiniLang</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Evaluador MiniLang</h1>
+    <div class="row">
+      <span class="small">Escribe tu código</span>
+      <button id="runBtn">Ejecutar</button>
+    </div>
+
+    <textarea id="code" placeholder=""></textarea>
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      const code = document.getElementById("code").value;
+      const out = document.getElementById("output");
+
+      try {
+        const res = await fetch("http://127.0.0.1:8080/run/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code })
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          out.textContent = "Error:\n" + data.error + "\n\n" + (data.traceback || "");
+        } else {
+          let resultText = "";
+          resultText += "Entrada:\n" + data.entrada + "\n\n";
+          resultText += "Árbol:\n" + data.arbol + "\n\n";
+
+          resultText += "Resultado:\n" + data.resultado + "\n\n";
+
+          //resultText += "Memoria:\n" + JSON.stringify(data.memoria, null, 2) + "\n\n";
+
+          if (data.prints && data.prints.length > 0) {
+            resultText += "Prints:\n" + data.prints.join("\n") + "\n";
+          }
+
+          out.textContent = resultText;
+        }
+
+      } catch (err) {
+        out.textContent = "Error de conexión:\n" + err;
+      }
+    });
+  </script>
+</body>
+</html>
+
